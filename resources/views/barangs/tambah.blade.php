@@ -1,6 +1,17 @@
 @extends('layouts.layout')
 
 @section('content')
+    <section class="breadcrumbs" style="background-color: #FFf; padding-left: 8.5rem;">
+        <div class="container">
+            <div class=" my-auto d-flex justify-content-between align-items-center">
+                <h2>Tambah Barang</h2>
+                <ul class="my-auto" style="list-style-type: none;">
+                    <li><a href="#">Home</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </section>
     <div class="container pb-5">
         <div class="page-title d-flex flex-column  gap-1 mx-5 my-5 pb-5 ">
             <div id="kt_app_content"

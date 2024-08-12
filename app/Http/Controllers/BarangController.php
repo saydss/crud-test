@@ -5,21 +5,56 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Log;
 use App\Models\Barang;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class BarangController extends Controller
 {
     public function index(Request $request)
     {
         $query = Barang::query();
+
+        $query->when($request->has('filter'), function($query) use ($request) {
+            if ($request->filter != '') {
+                if ($request->filter == 'in_stock') {
+                    $query->where('stok', '>', 3);
+                } elseif ($request->filter == 'out_of_stock') {
+                    $query->where('stok','<', 3); 
+                }
+            }
+        });
     
         if ($request->filled('search')) {
             $query->where('nama_barang', 'like', '%' . $request->search . '%');
         }
-    
-        $barangs = $query->paginate(2);
-    
-        return view('barangs.index', compact('barangs'));
+        if ($request->has('sort') && $request->has('order')) {
+            if ($request->sort == 'nama_barang' && $request->order == 'asc') {
+                $query->orderBy('nama_barang', 'asc');
+            } elseif ($request->sort == 'nama_barang' && $request->order == 'desc') {
+                $query->orderBy('nama_barang', 'desc');
+            }
+        }   
+
+        $filteredData = $query->get(); 
+
         
+         $data = collect();
+        for ($i = 0; $i < 5; $i++) {
+        foreach ($filteredData as $item) {
+            $data->push($item);
+        }
+    }
+
+         $perPage = 20; 
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentPageItems = $data->slice(($currentPage - 1) * $perPage, $perPage)->all();
+
+        $paginatedData = new LengthAwarePaginator($currentPageItems, $data->count(), $perPage);
+        $paginatedData->setPath($request->url());
+        $paginatedData->appends($request->all());
+
+    
+    return view('barangs.index', ['barangs' => $paginatedData]);        
     }
 
     public function create()
